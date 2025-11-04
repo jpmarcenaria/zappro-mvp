@@ -1,0 +1,21 @@
+{
+  "allow_write": [
+    "src/**", "tests/**", "docs/**",
+    "README.md", "CONTRIBUTING.md", "Makefile",
+    "scripts/**", ".github/workflows/**",
+    ".gitignore", ".editorconfig", "AGENTS.md", "PRD.md"
+  ],
+  "deny_write": [
+    "secrets/**", "infra/prod/**"
+  ],
+  "disallow_renames": true,
+  "max_files_changed": 50,
+  "max_diff_bytes": 200000,
+  "forbidden_patterns": [
+    "rm -rf /", "curl http", "wget http",
+    "eval\\(", "os\\.system\\(", "subprocess\\.Popen\\("
+  ],
+  "require_updates": [
+    { "touches": "src/**", "also_update": ["tests/**", "docs/**"] }
+  ]
+}

@@ -1,0 +1,23 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare git refs
+        run: |
+          git fetch --no-tags --prune --depth=2 origin +refs/heads/*:refs/remotes/origin/* || true
+      - name: Validate
+        run: |
+          bash scripts/validate.sh
+      - name: Policy Check (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          CHANGED_FILES="$(git diff --name-only origin/${{ github.base_ref }}...HEAD)" \
+          bash scripts/policy-check.sh
