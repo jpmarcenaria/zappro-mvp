@@ -1,5 +1,10 @@
 # Guia — Operação LLM (Bootstrap → PR → CI/CD)
 
+ATENÇÃO (temporário): este arquivo é um guia para humanos apenas. Após preencher o PRD.md (Seção 0 e demais seções mínimas), remova este arquivo do repositório antes de iniciar a execução pela LLM.
+
+Remoção sugerida (humano):
+- `git rm Guia.md && git commit -m "docs: remove Guia.md (PRD concluído; iniciar LLM)"`
+
 Este guia descreve, passo a passo, como uma LLM (ou você) deve usar este template orientado por PRD.
 
 ## 1) Prepare o PRD
@@ -47,4 +52,3 @@ Este guia descreve, passo a passo, como uma LLM (ou você) deve usar este templa
 - “Qual stack devo usar?” → Defina na Seção 0 do `PRD.md` (exemplos prontos lá).
 - “Onde coloco comandos de execução?” → `Makefile`/`justfile` e `docs/how-to-run.md`.
 - “Posso editar `.vscode/`?” → Sim, mantenha minimalista e útil (não force extensões proprietárias).
-

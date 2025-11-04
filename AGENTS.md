@@ -21,6 +21,7 @@ Ferramentas e conduta:
 - Use buscas rápidas (rg) e edições via patch aplicável.
 - Não renomeie nem delete arquivos massivamente; evite mudanças cosméticas amplas.
 - Se tocar em src/**, também atualize tests/** e docs/** relevantes.
+- Se `Guia.md` existir, ignore-o (conteúdo é para humanos) e não o modifique. O humano poderá removê-lo antes da execução do Bootstrap.
 
 Validação e fluxo:
 - Siga também o `Guia.md` para a ordem operacional (PRD → plano → bootstrap → validação → PR).

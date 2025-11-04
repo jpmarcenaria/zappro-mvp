@@ -16,6 +16,23 @@ Um template pensado para trabalhar com LLMs sem alucinação: PRD como fonte ún
 5. Oriente a LLM: “Leia `PRD.md` e siga `AGENTS.md` para iniciar o Bootstrap (Fase 0)”.
 6. Abra PRs pequenos; CI deve ficar verde.
 
+## Antes de iniciar com a LLM (humano)
+- Preencha a Seção 0 do `PRD.md` (stack) e as seções mínimas do PRD.
+- Remova o guia humano (opcional, recomendado):
+  - `git rm Guia.md && git commit -m "docs: remove Guia.md (PRD concluído; iniciar LLM)"`
+- Use o prompt sugerido abaixo para iniciar a Fase 0 com a LLM.
+
+Prompt sugerido (cole para a LLM):
+"""
+Leia PRD.md e obedeça estritamente AGENTS.md e .codex/policy.json. Confirme a stack escolhida na Seção 0 do PRD e proponha um plano curto para a Fase 0 (Bootstrap). Em seguida, implemente apenas o mínimo necessário:
+- Scaffold em src/** (ou estrutura equivalente), endpoint/rota de saúde;
+- Arquivos de dependências e scripts (fmt, lint, test, dev, run) via Makefile/justfile;
+- Atualize docs/how-to-run.md com comandos concretos;
+- Mantenha diffs pequenos, sem tocar secrets/ e infra/prod/;
+- Rode scripts/validate.sh localmente (simular) e descreva validação.
+Abra um PR pequeno com escopo, riscos, validação e próximos passos para a Fase 1.
+"""
+
 ## Estrutura
 - `PRD.md`: requisitos do produto e guia para execução por fases.
 - `AGENTS.md`: regras e limites para agentes (paths, estilo, validação).
