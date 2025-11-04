@@ -31,6 +31,13 @@ Um template pensado para trabalhar com LLMs sem alucinação: PRD como fonte ún
 - MVP (Fase 1): implementar funcionalidades essenciais conforme `PRD.md`.
 - Iteração (Fase 2): performance, observabilidade, segurança, DX.
 
+## Exemplo incluído: Python FastAPI
+- Setup: `make setup`
+- Desenvolvimento (reload): `make dev` → http://localhost:8000 (docs em `/docs`)
+- Testes: `make test`
+- Lint/format: `make lint` / `make fmt`
+- Variáveis: copie `.env.example` para `.env`
+
 ## Diretrizes para LLMs
 - Leia `PRD.md` e proponha um plano curto de execução.
 - Só altere caminhos permitidos na política; mantenha diffs pequenos.
