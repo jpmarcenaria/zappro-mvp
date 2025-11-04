@@ -35,6 +35,17 @@ Um template pensado para trabalhar com LLMs sem alucinação: PRD como fonte ún
 - Este template não impõe linguagem/framework.
 - Defina a stack no `PRD.md` e, então, a LLM deve criar os arquivos necessários (ex.: Node/Next, Python/FastAPI, etc.), atualizar `docs/how-to-run.md` e ajustar `Makefile`.
 
+## Resumo das Fases (0→6)
+- Fase 0 — Bootstrap: skeleton, scripts (`fmt/lint/test/dev/run`), docs e CI
+- Fase 1 — MVP: funcionalidades essenciais com testes e docs
+- Fase 2 — Observabilidade e Qualidade: logs, métricas, tracing, cobertura
+- Fase 3 — Infra e Deploy: containerização, migrations, staging, secrets e deploy
+- Fase 4 — Performance e Segurança: caching, hardening, a11y
+- Fase 5 — Escala e DX: filas, rate‑limit, docs de API, DX
+- Fase 6 — Release e Manutenção: versionamento, backups, SLOs
+
+Detalhes e checklists em `PRD.md` (Seção “20. Detalhamento das Fases”).
+
 ## Diretrizes para LLMs
 - Leia `PRD.md` e proponha um plano curto de execução.
 - Só altere caminhos permitidos na política; mantenha diffs pequenos.
@@ -45,6 +56,7 @@ Um template pensado para trabalhar com LLMs sem alucinação: PRD como fonte ún
 - Local:
   - `bash scripts/validate.sh`
   - Edite `PRD.md` e `CODEOWNERS`
+  - Consulte `Guia.md` para o passo‑a‑passo operacional
 - Git remoto:
   - `git remote add origin <URL>`
   - `git push -u origin main`

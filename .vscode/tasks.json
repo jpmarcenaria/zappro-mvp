@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Validate (policy + basics)",
+      "type": "shell",
+      "command": "bash scripts/validate.sh",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
+

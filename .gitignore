@@ -3,7 +3,8 @@
 Thumbs.db
 
 # Editors
-.vscode/
+# .vscode é versionado para padronizar DX no Windows/WSL
+!.vscode/
 .idea/
 *.swp
 *.swo

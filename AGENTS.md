@@ -22,6 +22,7 @@ Ferramentas e conduta:
 - Não renomeie nem delete arquivos massivamente; evite mudanças cosméticas amplas.
 - Se tocar em src/**, também atualize tests/** e docs/** relevantes.
 
-Validação:
+Validação e fluxo:
+- Siga também o `Guia.md` para a ordem operacional (PRD → plano → bootstrap → validação → PR).
 - Rode `scripts/validate.sh` localmente; CI deve passar.
 - PRs devem incluir plano, risco, validação e próximos passos.

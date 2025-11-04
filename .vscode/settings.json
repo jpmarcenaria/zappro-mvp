@@ -1,0 +1,13 @@
+{
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "editor.tabSize": 2,
+  "editor.detectIndentation": true,
+  "editor.renderWhitespace": "boundary",
+  "editor.formatOnSave": true,
+  "search.useIgnoreFiles": true,
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false
+}
+
