@@ -1,21 +1,49 @@
-# Template LLM‑Safe
+# exemplo-repo — LLM‑Safe Full‑Stack Template
 
-Este repositório é um template para iniciar projetos com suporte a trabalho por LLMs, mantendo guardrails técnicos e de processo.
+Um template pensado para trabalhar com LLMs sem alucinação: PRD como fonte única de verdade, regras claras para agentes e validação automatizada em CI.
+
+## Por que este template?
+- Fonte única: `PRD.md` concentra visão, escopo, arquitetura e critérios de aceite.
+- Guardrails para LLMs: `AGENTS.md` + `.codex/policy.json` limitam o que pode ser alterado.
+- Qualidade como contrato: `scripts/validate.sh` e CI bloqueiam alterações fora do padrão.
+- Deltas atômicos: pequenas mudanças com testes e docs atualizados.
 
 ## Como usar
-1. Duplique este repositório (ou copie a pasta) para um novo projeto.
-2. Edite o arquivo PRD.md com seu produto, fases e requisitos.
-3. Abra o VS Code (WSL) na raiz e rode `bash scripts/validate.sh`.
-4. Peça à LLM: "Leia PRD.md e siga AGENTS.md para iniciar o Bootstrap (Fase 0)." 
-5. Abra PRs pequenos e focados; garanta CI verde.
+1. Copie este repositório (ou duplique a pasta) para um novo projeto.
+2. Edite `PRD.md` com seu produto (preencha os campos `< >`).
+3. Ajuste `CODEOWNERS` para seu usuário/equipe.
+4. Rode `bash scripts/validate.sh` e garanta OK local.
+5. Oriente a LLM: “Leia `PRD.md` e siga `AGENTS.md` para iniciar o Bootstrap (Fase 0)”.
+6. Abra PRs pequenos; CI deve ficar verde.
 
-## Guardrails
-- Regras para agentes: ver `AGENTS.md`.
-- Política legível por máquina: `.codex/policy.json` + `scripts/policy-check.sh`.
-- CI: `.github/workflows/ci.yml`.
+## Estrutura
+- `PRD.md`: requisitos do produto e guia para execução por fases.
+- `AGENTS.md`: regras e limites para agentes (paths, estilo, validação).
+- `.codex/policy.json`: política legível por máquina (allow/deny, limites, padrões proibidos).
+- `scripts/policy-check.sh`: aplica a política no diff do PR.
+- `scripts/validate.sh`: checagens mínimas e execução do policy‑check.
+- `.github/workflows/ci.yml`: CI que valida alterações em push/PR.
+- `docs/`: arquitetura e “como rodar”.
+- `Makefile`: alvos `check/validate` (ajuste `fmt/lint/test` no projeto real).
 
-## Próximos passos
-- A partir do PRD, a LLM deve:
-  - Propor plano, criar skeleton em `src/`, `tests/`, `docs/`.
-  - Atualizar `README.md`, `docs/architecture.md`, `docs/how-to-run.md`.
-  - Manter mudanças pequenas e justificadas.
+## Fluxo LLM‑first
+- Bootstrap (Fase 0): criar skeleton em `src/`, `tests/`, `docs/`, ajustar `README`, ligar CI.
+- MVP (Fase 1): implementar funcionalidades essenciais conforme `PRD.md`.
+- Iteração (Fase 2): performance, observabilidade, segurança, DX.
+
+## Diretrizes para LLMs
+- Leia `PRD.md` e proponha um plano curto de execução.
+- Só altere caminhos permitidos na política; mantenha diffs pequenos.
+- Atualize testes e docs junto com o código; execute `scripts/validate.sh`.
+- Abra PR descrevendo escopo, riscos, validação e próximos passos.
+
+## Começar agora
+- Local:
+  - `bash scripts/validate.sh`
+  - Edite `PRD.md` e `CODEOWNERS`
+- Git remoto:
+  - `git remote add origin <URL>`
+  - `git push -u origin main`
+
+## Licença
+- Defina a licença adequada ao seu projeto (`LICENSE`).
