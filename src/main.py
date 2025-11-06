@@ -1,23 +1,37 @@
 """ZapPro API entrypoint with security hardening middleware."""
 
-from __future__ import annotations
+ 
 
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 from starlette.middleware import Middleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from . import __version__
 from .config import Settings, get_settings
+from .crud import project as project_crud
+from .crud import task as task_crud
+from .database import get_db, init_db
+from .models.user import User as UserModel
 from .security import (
     FixedWindowRateLimiter,
     RequestIdTracker,
     build_request_id,
     resolve_client_ip,
+)
+from .schemas.auth import Token, User as UserSchema, UserCreate, UserLogin
+from .schemas.project import Project as ProjectSchema, ProjectCreate, ProjectUpdate
+from .schemas.task import Task as TaskSchema, TaskCreate, TaskUpdate
+from .utils.auth import (
+    create_access_token,
+    get_current_user,
+    get_password_hash,
+    verify_password,
 )
 
 LOGGER = logging.getLogger("zappro.api")
@@ -171,7 +185,186 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "rate_limit_window": str(settings.rate_limit.window_seconds),
         }
 
+    # Routers: inline auth routes (fallback to avoid import issues)
+    from fastapi import Depends
+    from sqlalchemy.orm import Session
+    from .schemas.auth import User as UserSchema, UserCreate, UserLogin, Token
+    from .models.user import User as UserModel
+    from .utils.auth import create_access_token, get_password_hash, verify_password
+
+    @app.post("/api/v1/auth/register", tags=["auth"], response_model=UserSchema, status_code=status.HTTP_201_CREATED)
+    def register(user: UserCreate, db: Session = Depends(get_db)) -> UserSchema:
+        existing = db.query(UserModel).filter(UserModel.email == user.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        db_user = UserModel(
+            email=user.email,
+            name=user.name,
+            role=user.role,
+            hashed_password=get_password_hash(user.password),
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user  # type: ignore[return-value]
+
+    @app.post("/api/v1/auth/login", tags=["auth"], response_model=Token)
+    def login(user_credentials: UserLogin, db: Session = Depends(get_db)) -> Token:
+        db_user = db.query(UserModel).filter(UserModel.email == user_credentials.email).first()
+        if not db_user or not verify_password(user_credentials.password, db_user.hashed_password):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
+        token = create_access_token({"sub": db_user.email})
+        return {"access_token": token, "token_type": "bearer", "user": db_user}  # type: ignore[dict-item]
+
+    @app.get("/ping", tags=["health"])
+    def ping() -> dict[str, str]:
+        return {"pong": "ok"}
+
+    @app.get("/api/v1/projects", response_model=List[ProjectSchema], tags=["projects"])
+    def list_projects(
+        skip: int = 0,
+        limit: int = 100,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> List[ProjectSchema]:
+        return project_crud.get_projects(db, owner_id=current_user.id, skip=skip, limit=limit)
+
+    @app.post(
+        "/api/v1/projects",
+        response_model=ProjectSchema,
+        status_code=status.HTTP_201_CREATED,
+        tags=["projects"],
+    )
+    def create_project(
+        project: ProjectCreate,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> ProjectSchema:
+        return project_crud.create_project(db, project=project, owner_id=current_user.id)
+
+    @app.get(
+        "/api/v1/projects/{project_id}",
+        response_model=ProjectSchema,
+        tags=["projects"],
+    )
+    def get_project(
+        project_id: int,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> ProjectSchema:
+        db_project = project_crud.get_project(db, project_id=project_id, owner_id=current_user.id)
+        if not db_project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return db_project
+
+    @app.put(
+        "/api/v1/projects/{project_id}",
+        response_model=ProjectSchema,
+        tags=["projects"],
+    )
+    def update_project(
+        project_id: int,
+        project_update: ProjectUpdate,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> ProjectSchema:
+        db_project = project_crud.update_project(
+            db, project_id=project_id, project_update=project_update, owner_id=current_user.id
+        )
+        if not db_project:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return db_project
+
+    @app.delete(
+        "/api/v1/projects/{project_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        tags=["projects"],
+    )
+    def delete_project(
+        project_id: int,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> None:
+        success = project_crud.delete_project(db, project_id=project_id, owner_id=current_user.id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+    @app.get(
+        "/api/v1/projects/{project_id}/tasks",
+        response_model=List[TaskSchema],
+        tags=["tasks"],
+    )
+    def list_tasks(
+        project_id: int,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> List[TaskSchema]:
+        return task_crud.get_tasks_by_project(db, project_id=project_id, owner_id=current_user.id)
+
+    @app.post(
+        "/api/v1/tasks",
+        response_model=TaskSchema,
+        status_code=status.HTTP_201_CREATED,
+        tags=["tasks"],
+    )
+    def create_task_endpoint(
+        task: TaskCreate,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> TaskSchema:
+        db_task = task_crud.create_task(db, task=task, owner_id=current_user.id)
+        if not db_task:
+            raise HTTPException(status_code=404, detail="Project not found")
+        return db_task
+
+    @app.put(
+        "/api/v1/tasks/{task_id}",
+        response_model=TaskSchema,
+        tags=["tasks"],
+    )
+    def update_task_endpoint(
+        task_id: int,
+        task_update: TaskUpdate,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> TaskSchema:
+        db_task = task_crud.update_task(
+            db, task_id=task_id, task_update=task_update, owner_id=current_user.id
+        )
+        if not db_task:
+            raise HTTPException(status_code=404, detail="Task not found")
+        return db_task
+
+    @app.delete(
+        "/api/v1/tasks/{task_id}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        tags=["tasks"],
+    )
+    def delete_task_endpoint(
+        task_id: int,
+        current_user=Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> None:
+        success = task_crud.delete_task(db, task_id=task_id, owner_id=current_user.id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+    # Initialize DB tables for local dev (SQLite). In production, use Alembic.
+    try:
+        init_db()
+    except Exception:  # pragma: no cover - best-effort dev path
+        LOGGER.debug("init_db skipped or failed (likely non-SQLite backend)")
+
+    @app.on_event("startup")
+    async def _log_routes() -> None:  # pragma: no cover - diagnostic
+        try:
+            paths = [getattr(r, "path", "<unknown>") for r in app.routes]
+            LOGGER.info("Registered routes: %s", paths)
+        except Exception:
+            pass
+
     return app
 
 
 app = create_app()
+ 

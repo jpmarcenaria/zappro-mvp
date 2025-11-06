@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import HealthCheck from "@/components/health-check";
+import StoresExample from "@/components/stores-example";
+import UIDemo from "@/components/ui-demo";
+import AuthLayout from "@/components/auth/auth-layout";
+import ProjectsList from "@/components/projects/projects-list";
 
 export default function Home() {
   return (
@@ -23,6 +28,21 @@ export default function Home() {
           <Button variant="outline" asChild size="lg">
             <Link href="http://localhost:8000/health">Verificar API (localhost)</Link>
           </Button>
+        </div>
+        <div className="mt-8">
+          <HealthCheck />
+        </div>
+        <div className="mt-8">
+          <AuthLayout />
+        </div>
+        <div className="mt-8">
+          <ProjectsList />
+        </div>
+        <div className="mt-8">
+          <StoresExample />
+        </div>
+        <div className="mt-8">
+          <UIDemo />
         </div>
       </section>
     </main>

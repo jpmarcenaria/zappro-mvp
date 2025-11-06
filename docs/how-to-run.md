@@ -21,6 +21,22 @@ make backup            # gera artefato em backups/
 
 Health: `GET http://localhost:8000/health → {"status":"ok","version":"0.1.0"}`
 
+Auth (dev, SQLite fallback if DATABASE_URL not set):
+- Register: `POST http://localhost:8000/api/v1/auth/register` with JSON `{ "email": "user@example.com", "name": "User", "password": "secret123", "role": "gestor" }`
+- Login: `POST http://localhost:8000/api/v1/auth/login` with JSON `{ "email": "user@example.com", "password": "secret123" }` → `{ access_token, token_type, user }`
+
+Projects (JWT required – use token from login):
+- List: `GET http://localhost:8000/api/v1/projects` with header `Authorization: Bearer <token>`
+- Create: `POST http://localhost:8000/api/v1/projects` with JSON `{ "name": "Projeto Casa Verde", "description": "Construção residencial", "status": "active" }`
+- Update: `PUT http://localhost:8000/api/v1/projects/<id>` with partial JSON `{ "status": "completed" }`
+- Delete: `DELETE http://localhost:8000/api/v1/projects/<id>`
+
+Tasks (JWT required):
+- List by project: `GET http://localhost:8000/api/v1/projects/<project_id>/tasks`
+- Create: `POST http://localhost:8000/api/v1/tasks` with JSON `{ "title": "Planejar sprint", "project_id": 1, "status": "todo" }`
+- Update: `PUT http://localhost:8000/api/v1/tasks/<id>` with partial JSON `{ "status": "in_progress" }`
+- Delete: `DELETE http://localhost:8000/api/v1/tasks/<id>`
+
 ## Frontend (Next.js)
 ```bash
 cd frontend
