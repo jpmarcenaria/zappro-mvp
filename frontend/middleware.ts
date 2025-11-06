@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Dynamic API origin and extra connect-src entries via env
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const EXTRA_CONNECT = process.env.NEXT_PUBLIC_CONNECT_SRC ?? "";
+
 const SELF = "'self'";
 const IMG_SRC = ["'self'", "data:"];
 const FONT_SRC = ["'self'", "data:"];
@@ -33,7 +37,11 @@ export function middleware(request: NextRequest) {
     "object-src 'none'",
     "base-uri 'self'",
     "frame-ancestors 'none'",
-    `connect-src ${SELF}`,
+    // Strip quotes from EXTRA_CONNECT to avoid invalid CSP tokens
+    (() => {
+      const extra = (EXTRA_CONNECT || "").replace(/["']/g, "").trim();
+      return `connect-src ${SELF} ${API_URL} ${extra}`.trim();
+    })(),
   ].join("; ");
 
   const requestHeaders = new Headers(request.headers);
